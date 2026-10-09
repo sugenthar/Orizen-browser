@@ -92,7 +92,7 @@ function SecuritySheetInner({ visible, url, status, onDismiss }: Props) {
             accessibilityLabel="Close"
             accessibilityRole="button"
           >
-            <Text style={styles.doneText}>Done</Text>
+            <Text style={[styles.doneText, { color: colors.onAccent }]}>Done</Text>
           </Pressable>
         </View>
       </Pressable>
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   statusLabel: { fontSize: 14, flex: 1 },
   statusValue: { fontSize: 14, fontWeight: '700' },
   done: { marginTop: 18, paddingVertical: 12, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
-  doneText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  doneText: { fontWeight: '700', fontSize: 15 },
 });
 
 export const SecuritySheet = memo(SecuritySheetInner);

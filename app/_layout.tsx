@@ -28,6 +28,8 @@ function ThemedShell() {
         <Stack.Screen name="downloads" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="privacy" options={{ headerShown: false, presentation: 'card' }} />
         <Stack.Screen name="permissions" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="converter" options={{ headerShown: false, presentation: 'card' }} />
+        <Stack.Screen name="work" options={{ headerShown: false, presentation: 'card' }} />
       </Stack>
     </>
   );

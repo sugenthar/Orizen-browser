@@ -3,19 +3,25 @@ import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { tap } from '../utils/haptics';
+import { TOOLBAR_LABELS, WEBPAGE_TOOLBAR_ORDER, type WebpageToolbarId } from './toolbarItems';
 
 interface Props {
-  canGoBack: boolean;
-  canGoForward: boolean;
-  loading: boolean;
   tabCount: number;
   isPrivate: boolean;
-  onBack: () => void;
-  onForward: () => void;
+  onConverter: () => void;
+  onWork: () => void;
   onHome: () => void;
   onTabs: () => void;
   onMore: () => void;
 }
+
+const ICONS: Record<WebpageToolbarId, keyof typeof Ionicons.glyphMap> = {
+  converter: 'swap-horizontal',
+  work: 'briefcase',
+  home: 'home',
+  tabs: 'layers',
+  menu: 'menu',
+};
 
 function ToolbarButton({
   enabled,
@@ -36,6 +42,7 @@ function ToolbarButton({
   activeColor: string;
   dimColor: string;
 }) {
+  const { colors } = useTheme();
   return (
     <Pressable
       onPress={() => {
@@ -55,22 +62,37 @@ function ToolbarButton({
       <Text style={[styles.label, { color: dimColor }]}>{label}</Text>
       {typeof badge === 'number' && (
         <View style={[styles.badge, { backgroundColor: activeColor }]}>
-          <Text style={styles.badgeText}>{badge > 99 ? '99+' : String(badge)}</Text>
+          <Text style={[styles.badgeText, { color: colors.onAccent }]}>{badge > 99 ? '99+' : String(badge)}</Text>
         </View>
       )}
     </Pressable>
   );
 }
 
-function BottomToolbarInner({ canGoBack, canGoForward, tabCount, isPrivate, onBack, onForward, onHome, onTabs, onMore }: Props) {
+function BottomToolbarInner({ tabCount, isPrivate, onConverter, onWork, onHome, onTabs, onMore }: Props) {
   const { colors } = useTheme();
+  const handlers: Record<WebpageToolbarId, () => void> = {
+    converter: onConverter,
+    work: onWork,
+    home: onHome,
+    tabs: onTabs,
+    menu: onMore,
+  };
   return (
     <View style={[styles.wrap, { backgroundColor: colors.toolbar, borderTopColor: colors.border, borderRadius: 0 }]}>
-      <ToolbarButton enabled={canGoBack} label="Back" icon="arrow-back" onPress={onBack} activeColor={colors.accent} dimColor={colors.text} />
-      <ToolbarButton enabled={canGoForward} label="Forward" icon="arrow-forward" onPress={onForward} activeColor={colors.accent} dimColor={colors.text} />
-      <ToolbarButton enabled label="Home" icon="home" onPress={onHome} activeColor={colors.accent} dimColor={colors.text} />
-      <ToolbarButton enabled label="Tabs" icon="layers" onPress={onTabs} badge={tabCount} active={isPrivate} activeColor={colors.accent} dimColor={colors.text} />
-      <ToolbarButton enabled label="Menu" icon="menu" onPress={onMore} activeColor={colors.accent} dimColor={colors.text} />
+      {WEBPAGE_TOOLBAR_ORDER.map((id) => (
+        <ToolbarButton
+          key={id}
+          enabled
+          label={TOOLBAR_LABELS[id]}
+          icon={ICONS[id]}
+          onPress={handlers[id]}
+          badge={id === 'tabs' ? tabCount : undefined}
+          active={id === 'tabs' ? isPrivate : false}
+          activeColor={colors.accent}
+          dimColor={colors.text}
+        />
+      ))}
     </View>
   );
 }
@@ -81,7 +103,7 @@ const styles = StyleSheet.create({
   iconWrap: { width: 44, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 11, marginTop: 2, fontWeight: '600' },
   badge: { position: 'absolute', top: 4, right: 14, minWidth: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  badgeText: { fontSize: 11, fontWeight: '700' },
 });
 
 export const BottomToolbar = memo(BottomToolbarInner);

@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { isSearchResultsUrl } from '../search/searchService';
-import type { Bookmark, DownloadRecord, HistoryItem, QuickLink, SitePermissionRecord } from '../types';
+import type { Bookmark, DownloadRecord, HistoryItem, QuickLink, SitePermissionRecord, TaskList, TaskRecord } from '../types';
+import type { ConversionRecord } from '../converter/types';
 import { newId } from '../utils/helpers';
 
 let db: SQLite.SQLiteDatabase | null = null;
@@ -59,6 +60,37 @@ export function initDatabase(): Promise<void> {
           updatedAt INTEGER NOT NULL,
           PRIMARY KEY (origin, permission)
         );
+        CREATE TABLE IF NOT EXISTS conversions (
+          id TEXT PRIMARY KEY NOT NULL,
+          toolId TEXT NOT NULL,
+          toolTitle TEXT NOT NULL,
+          inputName TEXT NOT NULL,
+          outputName TEXT NOT NULL,
+          outputUri TEXT NOT NULL,
+          mimeType TEXT,
+          size INTEGER NOT NULL DEFAULT 0,
+          status TEXT NOT NULL DEFAULT 'completed',
+          error TEXT,
+          createdAt INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS task_lists (
+          id TEXT PRIMARY KEY NOT NULL,
+          name TEXT NOT NULL,
+          createdAt INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS tasks (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL,
+          notes TEXT NOT NULL DEFAULT '',
+          dueDate TEXT,
+          priority TEXT NOT NULL DEFAULT 'normal',
+          listId TEXT,
+          completed INTEGER NOT NULL DEFAULT 0,
+          createdAt INTEGER NOT NULL,
+          updatedAt INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_tasks_list ON tasks(listId);
+        CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
       `);
       await migrateToV2(database);
     })().catch(() => {
@@ -421,5 +453,128 @@ export async function clearSitePermissions(): Promise<void> {
     await getDb().runAsync('DELETE FROM site_permissions');
   } catch {
     console.warn('[Orizen] Site permissions unavailable');
+  }
+}
+
+// ---------- Conversions (local records only: names, sizes, URIs) ----------
+
+export async function insertConversion(record: ConversionRecord): Promise<void> {
+  await initDatabase();
+  await getDb().runAsync(
+    'INSERT INTO conversions (id, toolId, toolTitle, inputName, outputName, outputUri, mimeType, size, status, error, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [
+      record.id,
+      record.toolId,
+      record.toolTitle,
+      record.inputName,
+      record.outputName,
+      record.outputUri,
+      record.mimeType,
+      record.size,
+      record.status,
+      record.error,
+      record.createdAt,
+    ],
+  );
+}
+
+export async function listConversions(limit = 30): Promise<ConversionRecord[]> {
+  try {
+    await initDatabase();
+    return await getDb().getAllAsync<ConversionRecord>(
+      'SELECT * FROM conversions ORDER BY createdAt DESC LIMIT ?',
+      [limit],
+    );
+  } catch {
+    console.warn('[Orizen] Conversions unavailable');
+    return [];
+  }
+}
+
+export async function deleteConversion(id: string): Promise<void> {
+  try {
+    await initDatabase();
+    await getDb().runAsync('DELETE FROM conversions WHERE id = ?', [id]);
+  } catch {
+    console.warn('[Orizen] Conversions unavailable');
+  }
+}
+
+// ---------- Tasks & lists (local-only personal data) ----------
+
+export async function listTaskLists(): Promise<TaskList[]> {
+  try {
+    await initDatabase();
+    return await getDb().getAllAsync<TaskList>('SELECT id, name, createdAt FROM task_lists ORDER BY createdAt ASC');
+  } catch {
+    console.warn('[Orizen] Task lists unavailable');
+    return [];
+  }
+}
+
+export async function insertTaskList(list: TaskList): Promise<void> {
+  await initDatabase();
+  await getDb().runAsync('INSERT INTO task_lists (id, name, createdAt) VALUES (?, ?, ?)', [list.id, list.name, list.createdAt]);
+}
+
+export async function renameTaskList(id: string, name: string): Promise<void> {
+  try {
+    await initDatabase();
+    await getDb().runAsync('UPDATE task_lists SET name = ? WHERE id = ?', [name, id]);
+  } catch {
+    console.warn('[Orizen] Task lists unavailable');
+  }
+}
+
+export async function deleteTaskList(id: string): Promise<void> {
+  try {
+    await initDatabase();
+    // Tasks survive list deletion: they become unlisted instead of vanishing.
+    await getDb().runAsync('UPDATE tasks SET listId = NULL, updatedAt = ? WHERE listId = ?', [Date.now(), id]);
+    await getDb().runAsync('DELETE FROM task_lists WHERE id = ?', [id]);
+  } catch {
+    console.warn('[Orizen] Task lists unavailable');
+  }
+}
+
+export async function listTasks(): Promise<TaskRecord[]> {
+  try {
+    await initDatabase();
+    const rows = await getDb().getAllAsync<TaskRecord>(
+      'SELECT id, title, notes, dueDate, priority, listId, completed, createdAt, updatedAt FROM tasks ORDER BY createdAt DESC LIMIT 1000',
+    );
+    return rows.map((r) => ({ ...r, completed: Boolean(r.completed) }));
+  } catch {
+    console.warn('[Orizen] Tasks unavailable');
+    return [];
+  }
+}
+
+export async function insertTask(task: TaskRecord): Promise<void> {
+  await initDatabase();
+  await getDb().runAsync(
+    'INSERT INTO tasks (id, title, notes, dueDate, priority, listId, completed, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [task.id, task.title, task.notes, task.dueDate, task.priority, task.listId, task.completed ? 1 : 0, task.createdAt, task.updatedAt],
+  );
+}
+
+export async function updateTask(task: TaskRecord): Promise<void> {
+  try {
+    await initDatabase();
+    await getDb().runAsync(
+      'UPDATE tasks SET title = ?, notes = ?, dueDate = ?, priority = ?, listId = ?, completed = ?, updatedAt = ? WHERE id = ?',
+      [task.title, task.notes, task.dueDate, task.priority, task.listId, task.completed ? 1 : 0, task.updatedAt, task.id],
+    );
+  } catch {
+    console.warn('[Orizen] Tasks unavailable');
+  }
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  try {
+    await initDatabase();
+    await getDb().runAsync('DELETE FROM tasks WHERE id = ?', [id]);
+  } catch {
+    console.warn('[Orizen] Tasks unavailable');
   }
 }

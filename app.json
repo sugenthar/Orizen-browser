@@ -2,7 +2,7 @@
   "expo": {
     "name": "Orizen",
     "slug": "orizen-browser",
-    "version": "0.6.2",
+    "version": "0.8.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "orizen",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0B0E14"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -31,7 +31,7 @@
       "package": "com.orizen.browser",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0B0E14"
+        "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [

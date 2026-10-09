@@ -41,8 +41,8 @@ function ErrorViewInner({ url, message, onRetry, onHome }: Props) {
         <Text style={[styles.hint, { color: colors.textMuted }]}>{kind.hint}</Text>
         <View style={styles.row}>
           <Pressable onPress={onRetry} style={[styles.btn, { backgroundColor: colors.accent, borderRadius: radius.md }]} accessibilityLabel="Try again" accessibilityRole="button">
-            <Ionicons name="reload" size={17} color="#fff" style={styles.btnIcon} />
-            <Text style={styles.btnText}>Retry</Text>
+            <Ionicons name="reload" size={17} color={colors.onAccent} style={styles.btnIcon} />
+            <Text style={[styles.btnText, { color: colors.onAccent }]}>Retry</Text>
           </Pressable>
           <Pressable
             onPress={onHome}
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row' },
   btn: { flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 12, minWidth: 110, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   btnIcon: { marginRight: 6 },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  btnText: { fontWeight: '700', fontSize: 15 },
   btnGhost: { borderWidth: 1, marginLeft: 10 },
   btnGhostText: { fontWeight: '600', fontSize: 15 },
 });

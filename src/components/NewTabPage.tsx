@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeContext';
 import type { Bookmark, HistoryItem, QuickLink, SearchEngineId } from '../types';
 import { domainInitial } from '../utils/helpers';
 import { StatusDot } from './ui';
+import { Wordmark } from './Wordmark';
 
 interface Props {
   onNavigate: (input: string) => void;
@@ -43,7 +44,7 @@ function NewTabPageInner({
   refreshing,
   onRefresh,
 }: Props) {
-  const { colors, radius, spacing, type, weight } = useTheme();
+  const { colors, radius, spacing, type } = useTheme();
   const { width } = useWindowDimensions();
   const [draft, setDraft] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -78,7 +79,7 @@ function NewTabPageInner({
     >
       {/* Compact header: text wordmark only, no graphic logo */}
       <View style={styles.topBar}>
-        <Text style={[styles.wordmark, { color: colors.text, fontSize: type.title, fontWeight: weight.semibold }]}>Orizen</Text>
+        <Wordmark size={22} />
         <View style={styles.topActions}>
           <Pressable
             onPress={onOpenPrivacy}
@@ -262,7 +263,7 @@ function NewTabPageInner({
                 accessibilityLabel="Save shortcut"
                 accessibilityRole="button"
               >
-                <Text style={{ color: '#fff', fontWeight: '700' }}>Save</Text>
+                <Text style={{ color: colors.onAccent, fontWeight: '700' }}>Save</Text>
               </Pressable>
             </View>
           </View>
@@ -275,7 +276,6 @@ function NewTabPageInner({
 const styles = StyleSheet.create({
   content: { paddingBottom: 48 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, marginBottom: 8 },
-  wordmark: { fontWeight: '600', letterSpacing: 0.2 },
   topActions: { flexDirection: 'row', alignItems: 'center' },
   iconBtn: { padding: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   dotWrap: { position: 'absolute', top: 8, right: 8 },

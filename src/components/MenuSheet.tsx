@@ -10,6 +10,7 @@ export interface MenuAction {
   icon: keyof typeof Ionicons.glyphMap;
   danger?: boolean;
   hint?: string;
+  disabled?: boolean;
 }
 
 interface Props {
@@ -36,10 +37,14 @@ function MenuSheetInner({ visible, title, actions, onSelect, onDismiss }: Props)
             {actions.map((a, i) => (
               <Pressable
                 key={a.id}
-                onPress={() => onSelect(a.id)}
-                style={[styles.row, i === actions.length - 1 && styles.lastRow, { borderBottomColor: colors.border }]}
+                onPress={() => {
+                  if (!a.disabled) onSelect(a.id);
+                }}
+                disabled={a.disabled}
+                style={[styles.row, i === actions.length - 1 && styles.lastRow, { borderBottomColor: colors.border, opacity: a.disabled ? 0.35 : 1 }]}
                 accessibilityLabel={a.label}
                 accessibilityRole="button"
+                accessibilityState={{ disabled: a.disabled === true }}
               >
                 <Ionicons name={a.icon} size={22} color={a.danger ? colors.danger : colors.text} style={styles.icon} />
                 <View style={{ flex: 1 }}>

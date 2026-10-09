@@ -67,7 +67,7 @@ export const EmptyState = memo(function EmptyState({
           accessibilityLabel={actionLabel}
           accessibilityRole="button"
         >
-          <Text style={styles.emptyCtaText}>{actionLabel}</Text>
+          <Text style={[styles.emptyCtaText, { color: colors.onAccent }]}>{actionLabel}</Text>
         </Pressable>
       )}
     </View>
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontWeight: '700', marginBottom: 6, textAlign: 'center' },
   emptySub: { textAlign: 'center', lineHeight: 20 },
   emptyCta: { paddingHorizontal: 22, paddingVertical: 12, minHeight: 48, justifyContent: 'center', marginTop: 16 },
-  emptyCtaText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  emptyCtaText: { fontWeight: '700', fontSize: 15 },
   section: { fontWeight: '800', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   handleWrap: { alignItems: 'center', paddingTop: 10, paddingBottom: 2 },
   handle: { width: 40, height: 4, borderRadius: 2 },

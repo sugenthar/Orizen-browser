@@ -14,6 +14,7 @@ import { SecuritySheet } from '../src/components/SecuritySheet';
 import { TabsSheet } from '../src/components/TabsSheet';
 import { MAX_TABS, useTabs } from '../src/browser/TabContext';
 import { buildFindNavScript, buildFindScript, FIND_CLEAR_SCRIPT } from '../src/browser/pageScripts';
+import { resolveToolbarMode } from '../src/browser/toolbarState';
 import { useDownloads } from '../src/downloads/DownloadContext';
 import { useSitePermissions } from '../src/permissions/SitePermissionContext';
 import { resolveHistoryEnabled, resolvePrivacyStatus, type PrivacyStatus } from '../src/privacy/privacyMode';
@@ -91,8 +92,15 @@ export default function BrowserScreen() {
 
   const privateActive = isPrivateTab(activeTab);
   const showingNewTab = isNewTabUrl(activeTab.url) && !activeTab.error;
+  // Toolbar mode follows the same tab state that chooses between the
+  // homepage view and the WebView — never a URL substring guess.
+  // The toolbar is always visible in browser mode (v0.8.1 removed the
+  // scroll-hide behavior); only the mode switches with tab state.
+  const toolbarMode = resolveToolbarMode(showingNewTab, activeTab.error !== null);
   const historyEffective = resolveHistoryEnabled(settings.saveBrowsingHistory, settings.privacyMode);
   const trackerEffective = settings.privacyMode || settings.trackerProtectionEnabled;
+  // Toolbar content (58) + vertical padding (16); safe-area inset is added.
+  const toolbarHeight = 74 + insets.bottom;
 
   // Network protection states: refreshed from the real services, never assumed.
   const [vpnStatus, setVpnStatus] = useState<VPNStatus>('unsupported');
@@ -217,6 +225,20 @@ export default function BrowserScreen() {
 
   const openTabsSheet = useCallback(() => setTabsOpen(true), []);
 
+  // Guarded utility navigation: prevents rapid double-taps from pushing
+  // duplicate Converter/Work screens. Browser tab state lives in context
+  // above the router, so leaving and returning loses nothing.
+  const lastUtilityNav = useRef(0);
+  const openUtility = useCallback(
+    (path: '/converter' | '/work') => {
+      const now = Date.now();
+      if (now - lastUtilityNav.current < 800) return;
+      lastUtilityNav.current = now;
+      router.push(path);
+    },
+    [router],
+  );
+
   const newTabGuarded = useCallback(
     (mode: 'normal' | 'private') => {
       const id = mode === 'private' ? createPrivateTab(true) : createTab(undefined, true, 'normal');
@@ -329,6 +351,12 @@ export default function BrowserScreen() {
       hint: settings.privacyMode ? 'Tap to turn off' : 'History off · trackers blocked',
     },
     { id: 'reload', label: 'Reload', icon: 'reload' },
+    ...(!showingNewTab
+      ? [
+          { id: 'nav-back', label: 'Back', icon: 'arrow-back', disabled: !activeTab.canGoBack } as MenuAction,
+          { id: 'nav-forward', label: 'Forward', icon: 'arrow-forward', disabled: !activeTab.canGoForward } as MenuAction,
+        ]
+      : []),
     ...(blockedUrl
       ? [
           {
@@ -375,6 +403,12 @@ export default function BrowserScreen() {
         }
         case 'reload':
           reload();
+          break;
+        case 'nav-back':
+          if (activeTab.canGoBack) goBack();
+          break;
+        case 'nav-forward':
+          if (activeTab.canGoForward) goForward();
           break;
         case 'allow-trackers': {
           const target = blockedUrl;
@@ -428,7 +462,7 @@ export default function BrowserScreen() {
           break;
       }
     },
-    [activeTab.url, activeTab.title, newTabGuarded, reload, toggleBookmark, showToast, router, settings.privacyMode, vpnStatus, updateSettings, blockedUrl, allowTrackersFor, navigateActive],
+    [activeTab.url, activeTab.title, activeTab.canGoBack, activeTab.canGoForward, goBack, goForward, newTabGuarded, reload, toggleBookmark, showToast, router, settings.privacyMode, vpnStatus, updateSettings, blockedUrl, allowTrackersFor, navigateActive],
   );
 
   const onLinkMenuSelect = useCallback(
@@ -536,25 +570,28 @@ export default function BrowserScreen() {
             onClose={closeFind}
           />
         )}
-        <View style={{ paddingBottom: insets.bottom }}>
-          <BottomToolbar
-            canGoBack={activeTab.canGoBack}
-            canGoForward={activeTab.canGoForward}
-            loading={activeTab.loading}
-            tabCount={tabCount}
-            isPrivate={privateActive}
-            onBack={goBack}
-            onForward={goForward}
-            onHome={goHome}
-            onTabs={() => setTabsOpen(true)}
-            onMore={() => setMenuOpen(true)}
-          />
-        </View>
+        {toolbarMode === 'empty' ? (
+          // Homepage: keep the allocated area as a seamless spacer for future
+          // features — no buttons, labels, borders or separators.
+          <View style={{ height: toolbarHeight, backgroundColor: colors.toolbar }} />
+        ) : (
+          <View style={{ paddingBottom: insets.bottom, backgroundColor: colors.toolbar }}>
+            <BottomToolbar
+              tabCount={tabCount}
+              isPrivate={privateActive}
+              onConverter={() => openUtility('/converter')}
+              onWork={() => openUtility('/work')}
+              onHome={goHome}
+              onTabs={() => setTabsOpen(true)}
+              onMore={() => setMenuOpen(true)}
+            />
+          </View>
+        )}
 
         {toast && (
           <View style={styles.toastWrap} pointerEvents="none">
             <View style={[styles.toast, { backgroundColor: colors.text, borderRadius: radius.md }]}>
-              <Text style={styles.toastText}>{toast}</Text>
+              <Text style={[styles.toastText, { color: colors.background }]}>{toast}</Text>
             </View>
           </View>
         )}
@@ -622,5 +659,5 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   toastWrap: { position: 'absolute', left: 0, right: 0, bottom: 96, alignItems: 'center' },
   toast: { paddingHorizontal: 18, paddingVertical: 10 },
-  toastText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  toastText: { fontWeight: '600', fontSize: 14 },
 });

@@ -52,7 +52,7 @@ export default function PrivacyDashboardScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.hero, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.xl }]}>
           <View style={[styles.shield, { backgroundColor: status.privacyMode ? colors.accent : colors.surface2 }]}>
-            <Ionicons name="shield-checkmark" size={30} color={status.privacyMode ? '#fff' : colors.textMuted} />
+            <Ionicons name="shield-checkmark" size={30} color={status.privacyMode ? colors.onAccent : colors.textMuted} />
           </View>
           <Text style={[styles.heroTitle, { color: colors.text }]}>Privacy Mode</Text>
           <Text style={[styles.heroSub, { color: colors.textMuted }]}>

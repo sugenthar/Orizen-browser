@@ -1,4 +1,4 @@
-# Orizen Browser — v0.6.2
+# Orizen Browser — v0.8.1
 
 A real, lightweight, privacy-first personal mobile browser. Android-first, iOS-compatible.
 
@@ -7,6 +7,47 @@ A real, lightweight, privacy-first personal mobile browser. Android-first, iOS-c
 > requires an actual VPN provider/backend and OS-level VPN integration, which
 > Orizen v0.6.0 does not bundle — so it reports VPN as Not Available instead
 > of pretending.
+
+## Changelog — v0.8.1
+
+Bundling fix, persistent toolbar, larger wordmark
+- PDF bundling: the reported `PDFCheckBox` failure was a stale Metro cache,
+  not a package defect — pdf-lib 1.17.1 verified complete on disk, lockfile
+  intact, clean `expo export --clear` bundles it (4.39 MB, +0.95 MB vs
+  without); merge/split/extract call pattern proven by new pdf-lib API tests
+- Bottom toolbar is now always visible on webpages: scroll-hide reducer,
+  per-tab hidden memory, hide animation and WebView scroll hookup removed;
+  homepage keeps its empty seamless area; no layout/blank-space changes
+- Wordmark enlarged (homepage 22px primary, About 19px) with clipping-safe
+  line height; exact Unicode codepoints pinned by test
+
+Only features that actually work are documented; limitations are stated inline.
+
+## Changelog — v0.8.0
+
+Converter & Work Center
+- Exact-Unicode wordmark `𝓞𝓻𝓲𝔃𝓮𝓷` (U+1D4DE U+1D4FB U+1D4F2 U+1D503 U+1D4EE U+1D4F7) as text only, system-font fallback, no bundled font; OS launcher/splash assets untouched
+- Bottom toolbar is now Converter / Work / Home / Tabs / Menu (Back/Forward removed); WebView history still works via new menu Back/Forward items (honest disabled states), Android back button and swipe gestures
+- Converter workspace: real on-device tools (PDF merge/split/extract via pdf-lib; images→PDF and text→PDF via OS print pipeline; PNG/JPEG/WebP convert, resize, JPEG compress via native manipulator) with verified outputs, unique filenames, temp cleanup, recent-conversions log; genuinely unavailable tools (PDF→Word/DOCX, compression, text extraction) marked with technical reasons, never faked; nothing uploaded anywhere
+- Work task manager: full CRUD, Today/Upcoming/All/Completed filters, search, due/priority/newest sorting, custom lists with suggestions, rename/delete with task-preserving confirm, SQLite persistence, all local
+- 26 new unit tests; 126 total
+
+Only features that actually work are documented; limitations are stated inline.
+
+## Changelog — v0.7.0
+
+Context-aware toolbar & monochrome themes
+- Homepage shows an empty, seamless toolbar area (same allocated space, no
+  buttons/borders); webpages show Back/Forward from real per-tab WebView state
+- Toolbar auto-hides on scroll-down and reveals on scroll-up via the WebView
+  `onScroll` event (no injection, no new dependency); 12px hysteresis stops
+  flicker; each tab remembers its hidden state; navigation/tab-switch reveals
+- Pure monochrome palette: true-black dark theme, white light theme, black/
+  white accents with a contrasting `onAccent` token; status reds/greens kept
+  for warnings; WebView website content never themed
+- 16 new unit tests (toolbar states, scroll reducer, per-tab memory, palette)
+
+Only features that actually work are documented; limitations are stated inline.
 
 ## Changelog — v0.6.2
 

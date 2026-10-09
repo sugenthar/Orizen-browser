@@ -5,6 +5,7 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInpu
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabs } from '../src/browser/TabContext';
 import { ScreenHeader, SectionTitle } from '../src/components/ui';
+import { Wordmark } from '../src/components/Wordmark';
 import { getPrivacyCapabilities, SEARCH_NEVER_SAVED_NOTE } from '../src/privacy/privacyService';
 import { summarizeClearResults, type ClearCategory } from '../src/privacy/clearReport';
 import { clearCookiesNative } from '../src/privacy/siteData';
@@ -16,7 +17,7 @@ import type { SearchEngineId, ThemeMode } from '../src/types';
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors, radius, type, weight } = useTheme();
+  const { colors, radius, type } = useTheme();
   const { settings, update } = useSettings();
   const { clearWebViewCache } = useTabs();
   const capabilities = getPrivacyCapabilities();
@@ -358,8 +359,11 @@ export default function SettingsScreen() {
 
             <SectionTitle>ABOUT ORIZEN</SectionTitle>
             <View style={rowStyle}>
-              <Text style={[styles.about, { color: colors.text, fontSize: type.title, fontWeight: weight.semibold }]}>Orizen Browser</Text>
-              <Text style={[styles.hint, { color: colors.textMuted, fontSize: type.caption }]}>Version 0.6.2 · Privacy-first personal browser. Renders with Android WebView / WKWebView via react-native-webview. Requires a dev build for full native behaviour.</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
+                <Wordmark size={19} />
+                <Text style={[styles.hint, { color: colors.textMuted, fontSize: type.caption }]}>Browser</Text>
+              </View>
+              <Text style={[styles.hint, { color: colors.textMuted, fontSize: type.caption }]}>Version 0.8.1 · Privacy-first personal browser. Renders with Android WebView / WKWebView via react-native-webview. Requires a dev build for full native behaviour.</Text>
             </View>
             <View style={{ height: 24 }} />
       </ScrollView>
@@ -397,7 +401,7 @@ export default function SettingsScreen() {
                 <Text style={{ color: colors.textMuted }}>Cancel</Text>
               </Pressable>
               <Pressable onPress={() => void doClear()} style={[styles.mBtn, { backgroundColor: colors.danger, borderRadius: radius.md, opacity: clearing ? 0.6 : 1 }]} accessibilityLabel={clearing ? 'Clearing' : 'Clear now'} accessibilityRole="button" accessibilityState={{ busy: clearing, disabled: clearing }} disabled={clearing}>
-                <Text style={{ color: '#fff', fontWeight: '700' }}>{clearing ? 'Clearing…' : 'Clear'}</Text>
+                <Text style={{ color: colors.onAccent, fontWeight: '700' }}>{clearing ? 'Clearing…' : 'Clear'}</Text>
               </Pressable>
             </View>
           </View>
@@ -424,7 +428,6 @@ const styles = StyleSheet.create({
   plain: { fontWeight: '500' },
   cleared: { flexDirection: 'row', alignItems: 'center', padding: 10, marginTop: 10 },
   clearedText: { fontWeight: '700' },
-  about: { fontWeight: '800', marginBottom: 6 },
   modalWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   modal: { width: '100%', maxWidth: 380, padding: 20 },
   modalTitle: { fontWeight: '700', marginBottom: 12 },

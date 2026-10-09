@@ -117,6 +117,28 @@ export interface SitePermissionRecord {
   updatedAt: number;
 }
 
+export type TaskPriority = 'low' | 'normal' | 'high';
+
+export interface TaskList {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
+export interface TaskRecord {
+  id: string;
+  title: string;
+  notes: string;
+  /** Optional due date as YYYY-MM-DD, or null. */
+  dueDate: string | null;
+  priority: TaskPriority;
+  /** Custom list id, or null for unlisted tasks. */
+  listId: string | null;
+  completed: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export const DEFAULT_HOMEPAGE = 'about:newtab';
 export const NEWTAB_URL = 'about:newtab';
 
