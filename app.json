@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Orizen",
+    "slug": "orizen-browser",
+    "version": "0.6.2",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "orizen",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0E14"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.orizen.browser",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        },
+        "NSCameraUsageDescription": "Orizen asks for camera access only when a website you visit requests it, so you can decide per request.",
+        "NSMicrophoneUsageDescription": "Orizen asks for microphone access only when a website you visit requests it, so you can decide per request."
+      }
+    },
+    "android": {
+      "package": "com.orizen.browser",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0E14"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-font",
+      "@preeternal/react-native-cookie-manager"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
